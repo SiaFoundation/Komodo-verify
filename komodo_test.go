@@ -1,3 +1,23 @@
+// # Encoding and Hashing Tests for Sia Types
+//
+// This module provides test coverage for encoding, hashing, and deserialization of core
+// consensus types ported from the Go Sia implementation. These tests are essential to ensure
+// compatibility with the official `walletd` node and maintain protocol correctness.
+//
+// ## Purpose
+// The tests primarily verify:
+// - **Address derivation**
+// - **Transaction encoding**
+// - **Transaction deserialization**
+//
+// ## ⚠ Security Warning
+// These tests are **critical**. Any failure to accurately decode or deserialize valid
+// transactions produced by `walletd` could result in serious security issues with Komodo DeFi Framework.
+//
+// In particular, a deserialization failure could break atomic swaps. If the Rust code cannot
+// correctly decode/deserialize the Sia transaction that reveals the shared secret, one party could
+// potentially claim both sets of funds, breaking the atomicity of the swap.
+
 package komodo_test
 
 import (
@@ -22,6 +42,7 @@ func mustParsePublicKey(s string) (v types.PublicKey) {
 	return
 }
 
+// FIXME make a unit test for this
 func spendPolicyAtomicSwap(alice types.PublicKey, bob types.PublicKey, lockTime uint64, hash types.Hash256) types.SpendPolicy {
 	policy_after := types.PolicyAfter(time.Unix(int64(lockTime), 0))
 	policy_hash := types.PolicyHash(hash)
@@ -60,7 +81,8 @@ If any tests within this file fail at any point in the future, it's an indictati
 Verbose as possible to enable quickly identifying the source of any discrepancies.
 */
 
-// https://github.com/KomodoPlatform/komodo-defi-framew11ork/blob/d180505b43f8167bd733263e73804ea60d4c1632/mm2src/coins/sia/spend_policy.rs#L189
+// sia-rust/src/tests/encoding.rs test_unlock_condition_unlock_hash_standard
+// https://github.com/KomodoPlatform/sia-rust/blob/5e6516b378a9ec4c6ba5176c3ef108b999cd5783/src/tests/encoding.rs#L159C1-L171C10
 func TestStandardUnlockHash(t *testing.T) {
 	pk := types.PublicKey{1, 2, 3}
 	p := types.SpendPolicy{Type: types.PolicyTypeUnlockConditions(types.StandardUnlockConditions(pk))}
@@ -71,7 +93,8 @@ func TestStandardUnlockHash(t *testing.T) {
 	}
 }
 
-// https://github.com/KomodoPlatform/komodo-defi-framework/blob/b6af96ef5a2f75b4ce3d1308e0f8b9757ec15a95/mm2src/coins/sia/spend_policy.rs#L202
+// sia-rust/src/tests/encoding.rs test_unlock_condition_unlock_hash_2of2_multisig
+// https://github.com/KomodoPlatform/sia-rust/blob/376cc6b73061c8f65e52a9c0b7c65b54f1dfa9b6/src/tests/encoding.rs#L30C1-L44C10
 func TestUnlockConditions2of2Multisig(t *testing.T) {
 	uc := types.UnlockConditions{
 		Timelock: 0,
@@ -86,7 +109,8 @@ func TestUnlockConditions2of2Multisig(t *testing.T) {
 	}
 }
 
-// https://github.com/KomodoPlatform/komodo-defi-framework/blob/b6af96ef5a2f75b4ce3d1308e0f8b9757ec15a95/mm2src/coins/sia/spend_policy.rs#L219
+// sia-rust/src/tests/encoding.rs test_unlock_condition_unlock_hash_1of2_multisig
+// https://github.com/KomodoPlatform/sia-rust/blob/376cc6b73061c8f65e52a9c0b7c65b54f1dfa9b6/src/tests/encoding.rs#L47C1-L65C10
 func TestUnlockConditions1of2Multisig(t *testing.T) {
 	uc := types.UnlockConditions{
 		Timelock: 0,
@@ -101,7 +125,8 @@ func TestUnlockConditions1of2Multisig(t *testing.T) {
 	}
 }
 
-// https://github.com/KomodoPlatform/komodo-defi-framework/blob/b6af96ef5a2f75b4ce3d1308e0f8b9757ec15a95/mm2src/coins/sia/encoding.rs#L45
+// sia-rust/src/encoding.rs test_encoder_default_hash
+// https://github.com/KomodoPlatform/sia-rust/blob/928326d1f11bc375bbc8b0194669224144d996dd/src/encoding.rs#L63C1-L68C10
 func TestEncoderDefault(t *testing.T) {
 	h := types.NewHasher()
 	myHash := h.Sum()
@@ -110,8 +135,9 @@ func TestEncoderDefault(t *testing.T) {
 	}
 }
 
-// https://github.com/KomodoPlatform/komodo-defi-framework/blob/b6af96ef5a2f75b4ce3d1308e0f8b9757ec15a95/mm2src/coins/sia/encoding.rs#L53
-func TestEncoderWriteByes(t *testing.T) {
+// sia-rust/src/encoding.rs test_encoder_write_bytes
+// https://github.com/KomodoPlatform/sia-rust/blob/928326d1f11bc375bbc8b0194669224144d996dd/src/encoding.rs#L71C1-L78C10
+func TestEncoderWriteBytes(t *testing.T) {
 	h := types.NewHasher()
 	h.E.WriteBytes([]byte{1, 2, 3, 4})
 	myHash := h.Sum()
@@ -120,7 +146,8 @@ func TestEncoderWriteByes(t *testing.T) {
 	}
 }
 
-// https://github.com/KomodoPlatform/komodo-defi-framework/blob/b6af96ef5a2f75b4ce3d1308e0f8b9757ec15a95/mm2src/coins/sia/encoding.rs#L63
+// sia-rust/src/encoding.rs test_encoder_write_u8
+// https://github.com/KomodoPlatform/sia-rust/blob/928326d1f11bc375bbc8b0194669224144d996dd/src/encoding.rs#L81C1-L88C10
 func TestEncoderWriteUint8(t *testing.T) {
 	h := types.NewHasher()
 	h.E.WriteUint8(1)
@@ -130,7 +157,8 @@ func TestEncoderWriteUint8(t *testing.T) {
 	}
 }
 
-// https://github.com/KomodoPlatform/komodo-defi-framework/blob/b6af96ef5a2f75b4ce3d1308e0f8b9757ec15a95/mm2src/coins/sia/encoding.rs#L73
+// sia-rust/src/encoding.rs test_encoder_write_u64
+// https://github.com/KomodoPlatform/sia-rust/blob/928326d1f11bc375bbc8b0194669224144d996dd/src/encoding.rs#L91C1-L98C10
 func TestEncoderWriteUint64(t *testing.T) {
 	h := types.NewHasher()
 	h.E.WriteUint64(1)
@@ -140,7 +168,8 @@ func TestEncoderWriteUint64(t *testing.T) {
 	}
 }
 
-// https://github.com/KomodoPlatform/komodo-defi-framework/blob/b6af96ef5a2f75b4ce3d1308e0f8b9757ec15a95/mm2src/coins/sia/encoding.rs#L83
+// sia-rust/src/encoding.rs test_encoder_write_distiguisher
+// https://github.com/KomodoPlatform/sia-rust/blob/928326d1f11bc375bbc8b0194669224144d996dd/src/encoding.rs#L101C1-L108C10
 func TestEncoderWriteDistinguisher(t *testing.T) {
 	h := types.NewHasher()
 	h.WriteDistinguisher("test")
@@ -150,8 +179,9 @@ func TestEncoderWriteDistinguisher(t *testing.T) {
 	}
 }
 
-// https://github.com/KomodoPlatform/komodo-defi-framework/blob/b6af96ef5a2f75b4ce3d1308e0f8b9757ec15a95/mm2src/coins/sia/encoding.rs#L93
-func TestEmcoderWriteBool(t *testing.T) {
+// sia-rust/src/encoding.rs test_encoder_write_bool
+// https://github.com/KomodoPlatform/sia-rust/blob/928326d1f11bc375bbc8b0194669224144d996dd/src/encoding.rs#L111C1-L118C10
+func TestEncoderWriteBool(t *testing.T) {
 	h := types.NewHasher()
 	h.E.WriteBool(true)
 	myHash := h.Sum()
@@ -160,7 +190,8 @@ func TestEmcoderWriteBool(t *testing.T) {
 	}
 }
 
-// https://github.com/KomodoPlatform/komodo-defi-framework/blob/b6af96ef5a2f75b4ce3d1308e0f8b9757ec15a95/mm2src/coins/sia/encoding.rs#L103
+// sia-rust/src/encoding.rs test_encoder_reset
+// https://github.com/KomodoPlatform/sia-rust/blob/928326d1f11bc375bbc8b0194669224144d996dd/src/encoding.rs#L138C1-L148C10
 func TestReset(t *testing.T) {
 	h := types.NewHasher()
 	h.E.WriteBool(true)
@@ -176,7 +207,8 @@ func TestReset(t *testing.T) {
 	}
 }
 
-// https://github.com/KomodoPlatform/komodo-defi-framework/blob/b6af96ef5a2f75b4ce3d1308e0f8b9757ec15a95/mm2src/coins/sia/encoding.rs#L120
+// sia-rust/src/encoding.rs test_encoder_complex
+// https://github.com/KomodoPlatform/sia-rust/blob/928326d1f11bc375bbc8b0194669224144d996dd/src/encoding.rs#L138C1-L148C10
 func TestEncoderWriteComplex(t *testing.T) {
 	h := types.NewHasher()
 	h.WriteDistinguisher("test")
@@ -189,7 +221,7 @@ func TestEncoderWriteComplex(t *testing.T) {
 	}
 }
 
-// https://github.com/KomodoPlatform/komodo-defi-framework/blob/d180505b43f8167bd733263e73804ea60d4c1632/mm2src/coins/sia/spend_policy.rs#L239
+// https://github.com/KomodoPlatform/sia-rust/blob/dd4e466ae55fee0dafb81e1246371b4e150aaca1/src/tests/encoding.rs#L68C1-L79C10
 func TestPolicyAboveEncodeHash(t *testing.T) {
 	h := types.NewHasher()
 
@@ -206,7 +238,8 @@ func TestPolicyAboveEncodeHash(t *testing.T) {
 	}
 }
 
-// https://github.com/KomodoPlatform/komodo-defi-framework/blob/d180505b43f8167bd733263e73804ea60d4c1632/mm2src/coins/sia/spend_policy.rs#L253
+// sia-rust/src/tests/encoding.rs test_spend_policy_encode_after
+// https://github.com/KomodoPlatform/sia-rust/blob/928326d1f11bc375bbc8b0194669224144d996dd/src/tests/encoding.rs#L82C1-L92C10
 func TestPolicyAfterEncodeHash(t *testing.T) {
 	h := types.NewHasher()
 
@@ -225,7 +258,8 @@ func TestPolicyAfterEncodeHash(t *testing.T) {
 	}
 }
 
-// https://github.com/KomodoPlatform/komodo-defi-framework/blob/d180505b43f8167bd733263e73804ea60d4c1632/mm2src/coins/sia/spend_policy.rs#L267
+// sia-rust/src/tests/encoding.rs test_spend_policy_encode_pubkey
+// https://github.com/KomodoPlatform/sia-rust/blob/928326d1f11bc375bbc8b0194669224144d996dd/src/tests/encoding.rs#L95C1-L110C10
 func TestPolicyPublicKeyEncodeHash(t *testing.T) {
 	h := types.NewHasher()
 
@@ -243,7 +277,8 @@ func TestPolicyPublicKeyEncodeHash(t *testing.T) {
 	}
 }
 
-// https://github.com/KomodoPlatform/komodo-defi-framework/blob/d180505b43f8167bd733263e73804ea60d4c1632/mm2src/coins/sia/spend_policy.rs#L285
+// test_spend_policy_encode_hash
+// https://github.com/KomodoPlatform/sia-rust/blob/928326d1f11bc375bbc8b0194669224144d996dd/src/tests/encoding.rs#L113C1-L125C10
 func TestPolicyHash(t *testing.T) {
 	h := types.NewHasher()
 
@@ -261,7 +296,8 @@ func TestPolicyHash(t *testing.T) {
 	}
 }
 
-// https://github.com/KomodoPlatform/komodo-defi-framework/blob/d180505b43f8167bd733263e73804ea60d4c1632/mm2src/coins/sia/spend_policy.rs#L301
+// test_spend_policy_encode_threshold
+// https://github.com/KomodoPlatform/sia-rust/blob/928326d1f11bc375bbc8b0194669224144d996dd/src/tests/encoding.rs#L128C1-L142C10
 func TestPolicyThreshold(t *testing.T) {
 	h := types.NewHasher()
 
@@ -282,7 +318,8 @@ func TestPolicyThreshold(t *testing.T) {
 	}
 }
 
-// https://github.com/KomodoPlatform/komodo-defi-framework/blob/d180505b43f8167bd733263e73804ea60d4c1632/mm2src/coins/sia/spend_policy.rs#L319
+// test_spend_policy_encode_unlock_condition
+// https://github.com/KomodoPlatform/sia-rust/blob/928326d1f11bc375bbc8b0194669224144d996dd/src/tests/encoding.rs#L147C1-L168C10
 func TestPolicyUnlockConditionEncodeSpecialCase(t *testing.T) {
 	pubkey := types.PublicKey{1, 2, 3}
 	unlock_condition := types.PolicyTypeUnlockConditions{
@@ -307,8 +344,8 @@ func TestPolicyUnlockConditionEncodeSpecialCase(t *testing.T) {
 	}
 }
 
-// FIXME link to equivalent rust code once pushed
-// mm2src/coins/sia/transaction.rs test_siacoin_input_encode
+// sia-rust/src/tests/transaction.rs test_siacoin_input_encode
+// https://github.com/KomodoPlatform/sia-rust/blob/928326d1f11bc375bbc8b0194669224144d996dd/src/tests/transaction.rs#L12C1-L29C10
 func TestSiacoinInputEncodeHash(t *testing.T) {
 	h := types.NewHasher()
 
@@ -333,7 +370,8 @@ func TestSiacoinInputEncodeHash(t *testing.T) {
 	}
 }
 
-// FIXME mm2src/coins/sia/address.rs test_address_encode
+// sia-rust/src/tests/encoding.rs test_address_encode
+// https://github.com/KomodoPlatform/sia-rust/blob/fdb0a42e5a01679710e4475b3e64a4678b6bcca6/src/tests/encoding.rs#L211C1-L222C10
 func TestSiacoinAddressEncodeHash(t *testing.T) {
 	h := types.NewHasher()
 
@@ -348,7 +386,8 @@ func TestSiacoinAddressEncodeHash(t *testing.T) {
 	}
 }
 
-// mm2src/coins/sia/spend_policy.rs test_unlock_condition_encode
+// sia-rust/src/tests/encoding.rs test_unlock_condition_encode
+// https://github.com/KomodoPlatform/sia-rust/blob/fdb0a42e5a01679710e4475b3e64a4678b6bcca6/src/tests/encoding.rs#L171C1-L181C10
 func TestSiacoinUnlockConditionEncodeHash(t *testing.T) {
 	h := types.NewHasher()
 
@@ -369,7 +408,8 @@ func TestSiacoinUnlockConditionEncodeHash(t *testing.T) {
 	}
 }
 
-// mm2src/coins/sia/spend_policy.rs test_public_key_encode
+// sia-rust/src/tests/encoding.rs test_public_key_encode
+// https://github.com/KomodoPlatform/sia-rust/blob/fdb0a42e5a01679710e4475b3e64a4678b6bcca6/src/tests/encoding.rs#L184C1-L193C10
 func TestSiacoinPublicKeyEncodeHash(t *testing.T) {
 	h := types.NewHasher()
 	publicKey := types.PublicKey{1, 2, 3}
@@ -382,7 +422,8 @@ func TestSiacoinPublicKeyEncodeHash(t *testing.T) {
 	}
 }
 
-// mm2src/coins/sia/spend_policy.rs test_siacoin_currency_encode_v1
+// sia-rust/src/tests/transaction.rs test_siacoin_currency_encode_v1
+// https://github.com/KomodoPlatform/sia-rust/blob/dd4e466ae55fee0dafb81e1246371b4e150aaca1/src/tests/transaction.rs#L33C1-L39C10
 func TestSiacoinCurrencyEncodeHashV1(t *testing.T) {
 	h := types.NewHasher()
 	currency := types.NewCurrency64(1)
@@ -395,7 +436,8 @@ func TestSiacoinCurrencyEncodeHashV1(t *testing.T) {
 	}
 }
 
-// mm2src/coins/sia/spend_policy.rs test_siacoin_currency_encode_v2
+// sia-rust/src/tests/transaction.rs test_siacoin_currency_encode_v2
+// https://github.com/KomodoPlatform/sia-rust/blob/dd4e466ae55fee0dafb81e1246371b4e150aaca1/src/tests/transaction.rs#L42C1-L48C10
 func TestSiacoinCurrencyEncodeHashV2(t *testing.T) {
 	h := types.NewHasher()
 	currency := types.NewCurrency64(1)
@@ -408,7 +450,8 @@ func TestSiacoinCurrencyEncodeHashV2(t *testing.T) {
 	}
 }
 
-// mm2src/coins/sia/spend_policy.rs test_siacoin_currency_encode_v1
+// sia-rust/src/tests/transaction.rs test_siacoin_currency_encode_v1_max
+// https://github.com/KomodoPlatform/sia-rust/blob/dd4e466ae55fee0dafb81e1246371b4e150aaca1/src/tests/transaction.rs#L51C1-L58C1
 func TestSiacoinCurrencyEncodeHashV1Max(t *testing.T) {
 	h := types.NewHasher()
 	currency := types.NewCurrency(0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF)
@@ -421,7 +464,8 @@ func TestSiacoinCurrencyEncodeHashV1Max(t *testing.T) {
 	}
 }
 
-// mm2src/coins/sia/spend_policy.rs test_siacoin_currency_encode_v2_max
+// sia-rust/src/tests/transaction.rs test_siacoin_currency_encode_v2_max
+// https://github.com/KomodoPlatform/sia-rust/blob/dd4e466ae55fee0dafb81e1246371b4e150aaca1/src/tests/transaction.rs#L60C1-L66C10
 func TestSiacoinCurrencyEncodeHashV2Max(t *testing.T) {
 	h := types.NewHasher()
 	currency := types.NewCurrency(0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF)
@@ -434,7 +478,8 @@ func TestSiacoinCurrencyEncodeHashV2Max(t *testing.T) {
 	}
 }
 
-// mm2src/coins/sia/spend_policy.rs test_siacoin_output_encode_v1
+// sia-rust/src/tests/transaction.rs test_siacoin_output_encode_v1
+// https://github.com/KomodoPlatform/sia-rust/blob/dd4e466ae55fee0dafb81e1246371b4e150aaca1/src/tests/transaction.rs#L69C1-L79C10
 func TestSiacoinOutputEncodeHashV1(t *testing.T) {
 	h := types.NewHasher()
 	addr := types.StandardUnlockHash(types.PublicKey{1, 2, 3})
@@ -451,7 +496,8 @@ func TestSiacoinOutputEncodeHashV1(t *testing.T) {
 	}
 }
 
-// mm2src/coins/sia/spend_policy.rs test_siacoin_output_encode_v1
+// sia-rust/src/tests/transaction.rs test_siacoin_output_encode_v2
+// https://github.com/KomodoPlatform/sia-rust/blob/dd4e466ae55fee0dafb81e1246371b4e150aaca1/src/tests/transaction.rs#L82C1-L92C10
 func TestSiacoinOutputEncodeHashV2(t *testing.T) {
 	h := types.NewHasher()
 	addr := types.StandardUnlockHash(types.PublicKey{1, 2, 3})
@@ -468,7 +514,8 @@ func TestSiacoinOutputEncodeHashV2(t *testing.T) {
 	}
 }
 
-// mm2src/coins/sia/spend_policy.rs test_siacoin_output_encode_v1
+// sia-rust/src/tests/transaction.rs test_siacoin_input_encode_v1
+// https://github.com/KomodoPlatform/sia-rust/blob/dd4e466ae55fee0dafb81e1246371b4e150aaca1/src/tests/transaction.rs#L157C1-L166C10
 func TestSiacoinInputEncodeHashV1(t *testing.T) {
 	h := types.NewHasher()
 	uc := types.UnlockConditions{
@@ -491,7 +538,7 @@ func TestSiacoinInputEncodeHashV1(t *testing.T) {
 	}
 }
 
-// mm2src/coins/sia/transaction.rs test_state_element_encode
+// https://github.com/KomodoPlatform/sia-rust/blob/93511895ae802b2e0e259a5224d78016d1b20008/src/tests/transaction.rs#L113-L114
 func TestStateElementEncodeHash(t *testing.T) {
 	h := types.NewHasher()
 
@@ -503,12 +550,12 @@ func TestStateElementEncodeHash(t *testing.T) {
 	se.EncodeTo(h.E)
 	myHash := h.Sum()
 
-	if myHash.String() != "bf6d7b74fb1e15ec4e86332b628a450e387c45b54ea98e57a6da8c9af317e468" {
+	if myHash.String() != "70f868873fcb6196cd54bbb1e9e480188043426d3f7c9dc8fc5a7a536981cef1" {
 		t.Fatal("wrong hash:", myHash.String())
 	}
 }
 
-// mm2src/coins/sia/transaction.rs test_state_element_encode_null_merkle_proof
+// https://github.com/KomodoPlatform/sia-rust/blob/93511895ae802b2e0e259a5224d78016d1b20008/src/tests/transaction.rs#L127C1-L134C10
 func TestStateElementEncodeHashNullMerkleProof(t *testing.T) {
 	h := types.NewHasher()
 
@@ -519,12 +566,12 @@ func TestStateElementEncodeHashNullMerkleProof(t *testing.T) {
 	se.EncodeTo(h.E)
 	myHash := h.Sum()
 
-	if myHash.String() != "d69bc48bc797aff93050447aff0a3f7c4d489705378c122cd123841fe7778a3e" {
+	if myHash.String() != "a3865e5e284e12e0ea418e73127db5d1092bfb98ed372ca9a664504816375e1d" {
 		t.Fatal("wrong hash:", myHash.String())
 	}
 }
 
-// mm2src/coins/sia/transaction.rs test_siacoin_element_encode
+// https://github.com/KomodoPlatform/sia-rust/blob/93511895ae802b2e0e259a5224d78016d1b20008/src/tests/transaction.rs#L87C1-L111C10
 func TestSiacoinElementEncodeHash(t *testing.T) {
 	h := types.NewHasher()
 
@@ -548,12 +595,13 @@ func TestSiacoinElementEncodeHash(t *testing.T) {
 	siacoinElement.EncodeTo(h.E)
 	myHash := h.Sum()
 
-	if myHash.String() != "3c867a54b7b3de349c56585f25a4365f31d632c3e42561b615055c77464d889e" {
+	if myHash.String() != "4c46cbe535099409d2ea4255debda3fb62993595e305c78688ec4306f8464d7d" {
 		t.Fatal("wrong hash:", myHash.String())
 	}
 }
 
-// mm2src/coins/sia/transaction.rs test_signature_encode
+// sia-rust/src/tests/transaction.rs test_signature_encode
+// https://github.com/KomodoPlatform/sia-rust/blob/dd4e466ae55fee0dafb81e1246371b4e150aaca1/src/tests/transaction.rs#L169C1-L176C10
 func TestSignatureEncodeHash(t *testing.T) {
 	h := types.NewHasher()
 
@@ -571,31 +619,7 @@ func TestSignatureEncodeHash(t *testing.T) {
 	}
 }
 
-func TestSatisfiedPolicyEncodeHashPublicKeyMissingSignature(t *testing.T) {
-	defer func() {
-		if r := recover(); r == nil {
-			t.Errorf("The code did not panic")
-		} else {
-			expected := "runtime error: index out of range [0] with length 0"
-			if errMsg, ok := r.(error); ok {
-				if errMsg.Error() != expected {
-					t.Errorf("Expected panic: '%s', got: '%s'", expected, errMsg.Error())
-				}
-			} else {
-				if r != expected {
-					t.Errorf("Expected panic: '%s', got: '%v'", expected, r)
-				}
-			}
-		}
-	}()
-
-	h := types.NewHasher()
-
-	sp := types.SatisfiedPolicy{Policy: types.PolicyPublicKey(types.PublicKey{1, 2, 3})}
-	sp.EncodeTo(h.E) // This should panic
-}
-
-// mm2src/coins/sia/transaction.rs test_satisfied_policy_encode_public_key
+// https://github.com/KomodoPlatform/sia-rust/blob/93511895ae802b2e0e259a5224d78016d1b20008/src/tests/transaction.rs#L165C1-L185C10
 func TestSatisfiedPolicyPublicKey(t *testing.T) {
 	h := types.NewHasher()
 
@@ -612,31 +636,50 @@ func TestSatisfiedPolicyPublicKey(t *testing.T) {
 
 	myHash := h.Sum()
 
-	if myHash.String() != "51832be911c7382502a2011cbddf1a9f689c4ca08c6a83ae3d021fb0dc781822" {
+	if myHash.String() != "92d9097978387a5da9d17435b796984dae6bd4342c88684d0949e406755c289c" {
 		t.Fatal("wrong hash:", myHash.String())
 	}
 }
 
-// sia-rust/src/tests/transaction.rs test_satisfied_policy_encode_hash_empty
+// test_satisfied_policy_encode_hash_empty
+// https://github.com/KomodoPlatform/sia-rust/blob/dd4e466ae55fee0dafb81e1246371b4e150aaca1/src/tests/transaction.rs#L202C1-L215C10
 func TestSatisfiedPolicyHashEmpty(t *testing.T) {
 	h := types.NewHasher()
 
 	sp := types.SatisfiedPolicy{
 		Policy:     types.PolicyHash(types.Hash256{0}),
-		Signatures: []types.Signature{{}},
-		Preimages:  [][32]byte{{}}}
+		Signatures: []types.Signature{},
+		Preimages:  [][32]byte{}}
 
 	sp.EncodeTo(h.E)
-
 	myHash := h.Sum()
 
-	if myHash.String() != "1e612d1ee36338b93a36bac0c52007a2d678cde0bd9b95c36a1f61166cf02b87" {
+	if myHash.String() != "8499a629589884c5b343e61d1c503101229b44d529a36f2e27c37598067942a6" {
 		t.Fatal("wrong hash:", myHash.String())
 	}
 }
 
-// mm2src/coins/sia/transaction.rs test_satisfied_policy_encode_hash
-// Adding a signature to SatisfiedPolicy of PolicyHash should have no effect
+// test_satisfied_policy_encode_hash_frivulous_signature
+// https://github.com/KomodoPlatform/sia-rust/blob/dd4e466ae55fee0dafb81e1246371b4e150aaca1/src/tests/transaction.rs#L246C1-L260C10
+func TestSatisfiedPolicyHashWithPreimageAndFrivulousSignature(t *testing.T) {
+	h := types.NewHasher()
+
+	sp := types.SatisfiedPolicy{
+		Policy:     types.PolicyHash(types.Hash256{0}),
+		Signatures: []types.Signature{{}},
+		Preimages:  [][32]byte{{1, 2, 3, 4}}}
+
+	sp.EncodeTo(h.E)
+	println("buf: ", hex.EncodeToString(h.E.Buf()[:h.E.N()]))
+	myHash := h.Sum()
+
+	if myHash.String() != "cf1a51cb2e76546d96e8034ab050fbe95b6423ad450b2de8a4e76ad8f72500ed" {
+		t.Fatal("wrong hash:", myHash.String())
+	}
+}
+
+// https://github.com/KomodoPlatform/sia-rust/blob/93511895ae802b2e0e259a5224d78016d1b20008/src/tests/transaction.rs#L201C1-L217C10
+// Adding a signature to SatisfiedPolicy of PolicyHash should have no effect on encoding
 func TestSatisfiedPolicyHashFrivulousSignature(t *testing.T) {
 	h := types.NewHasher()
 	signature := mustParseSignature("105641BF4AE119CB15617FC9658BEE5D448E2CC27C9BC3369F4BA5D0E1C3D01EBCB21B669A7B7A17CF8457189EAA657C41D4A2E6F9E0F25D0996D3A17170F309")
@@ -649,29 +692,30 @@ func TestSatisfiedPolicyHashFrivulousSignature(t *testing.T) {
 	sp.EncodeTo(h.E)
 	myHash := h.Sum()
 
-	if myHash.String() != "7424653d0ca3ffded9a029bebe75f9ae9c99b5f284e23e9d07c0b03456f724f9" {
+	if myHash.String() != "f6885827fb8a6d1a5751ce3f5a8580dc590f262f42e2dd9944052ec43ffc8d97" {
 		t.Fatal("wrong hash:", myHash.String())
 	}
 }
 
-// mm2src/coins/sia/transaction.rs test_satisfied_policy_encode_hash
+// test_satisfied_policy_encode_hash_w_preimage
+// https://github.com/KomodoPlatform/sia-rust/blob/dd4e466ae55fee0dafb81e1246371b4e150aaca1/src/tests/transaction.rs#L262C1-L276C10
 func TestSatisfiedPolicyHash(t *testing.T) {
 	h := types.NewHasher()
 
 	sp := types.SatisfiedPolicy{
-		Policy:     types.PolicyHash(types.Hash256{0}),
-		Signatures: []types.Signature{{}},
+		Policy:     types.PolicyHash(types.Hash256{}),
+		Signatures: []types.Signature{},
 		Preimages:  [][32]byte{{1, 2, 3, 4}}}
 
 	sp.EncodeTo(h.E)
 	myHash := h.Sum()
 
-	if myHash.String() != "7424653d0ca3ffded9a029bebe75f9ae9c99b5f284e23e9d07c0b03456f724f9" {
+	if myHash.String() != "e3bbd67ade36322f3de8458b1daa80fd21bb74af88c779b768908e007611f36e" {
 		t.Fatal("wrong hash:", myHash.String())
 	}
 }
 
-// mm2src/coins/sia/transaction.rs test_satisfied_policy_encode_unlock_condition_standard
+// https://github.com/KomodoPlatform/sia-rust/blob/93511895ae802b2e0e259a5224d78016d1b20008/src/tests/transaction.rs#L235C1-L257C10
 func TestSatisfiedPolicyUnlockConditionStandard(t *testing.T) {
 	h := types.NewHasher()
 
@@ -688,12 +732,12 @@ func TestSatisfiedPolicyUnlockConditionStandard(t *testing.T) {
 	sp.EncodeTo(h.E)
 	myHash := h.Sum()
 
-	if myHash.String() != "c749f9ac53395ec557aed7e21d202f76a58e0de79222e5756b27077e9295931f" {
+	if myHash.String() != "0411ac20ae5472822bdc6c24c9ba2afdd828300ed3706cb1c07a8578276fd72d" {
 		t.Fatal("wrong hash:", myHash.String())
 	}
 }
 
-// mm2src/coins/sia/transaction.rs test_satisfied_policy_encode_unlock_condition_complex
+// https://github.com/KomodoPlatform/sia-rust/blob/93511895ae802b2e0e259a5224d78016d1b20008/src/tests/transaction.rs#L259C1-L293C10
 func TestSatisfiedPolicyUnlockConditionComplex(t *testing.T) {
 	h := types.NewHasher()
 
@@ -721,12 +765,13 @@ func TestSatisfiedPolicyUnlockConditionComplex(t *testing.T) {
 	sp.EncodeTo(h.E)
 	myHash := h.Sum()
 
-	if myHash.String() != "13806b6c13a97478e476e0e5a0469c9d0ad8bf286bec0ada992e363e9fc60901" {
+	if myHash.String() != "b4d658dbc32b3e147d2736f75b14ca881d5c04963663993b6448c86f4f1a2815" {
 		t.Fatal("wrong hash:", myHash.String())
 	}
 }
 
-// mm2src/coins/sia/transaction.rs test_satisfied_policy_threshold_simple
+// test_satisfied_policy_encode_threshold_simple
+// https://github.com/KomodoPlatform/sia-rust/blob/dd4e466ae55fee0dafb81e1246371b4e150aaca1/src/tests/transaction.rs#L338C1-L355C10
 func TestSatisfiedPolicyThresholdSimple(t *testing.T) {
 	h := types.NewHasher()
 
@@ -735,13 +780,13 @@ func TestSatisfiedPolicyThresholdSimple(t *testing.T) {
 
 	sp := types.SatisfiedPolicy{
 		Policy:     policy,
-		Signatures: []types.Signature{{}},
+		Signatures: []types.Signature{},
 		Preimages:  [][32]byte{{1, 2, 3, 4}}}
 
 	sp.EncodeTo(h.E)
 	myHash := h.Sum()
 
-	if myHash.String() != "50f4808b0661f56842472aed259136a43ed2bd7d59a88a3be28de9883af4a92d" {
+	if myHash.String() != "5cd34ed67f2b2a55d016b4c485dfd1ca2eca75f6831cec9eed9494d6fa735315" {
 		t.Fatal("wrong hash:", myHash.String())
 	}
 }
@@ -754,7 +799,7 @@ OP_ELSE
         OP_SIZE 20 OP_EQUALVERIFY OP_HASH160 <secret hash> OP_EQUALVERIFY <pubkey1> OP_CHECKSIG
 OP_ENDIF
 */
-// mm2src/coins/sia/transaction.rs test_satisfied_policy_threshold_atomic_swap_success
+// https://github.com/KomodoPlatform/sia-rust/blob/93511895ae802b2e0e259a5224d78016d1b20008/src/tests/transaction.rs#L314C1-L341C10
 func TestSatisfiedPolicyThresholdAtomicSwapSuccess(t *testing.T) {
 	h := types.NewHasher()
 
@@ -772,13 +817,12 @@ func TestSatisfiedPolicyThresholdAtomicSwapSuccess(t *testing.T) {
 	sp.EncodeTo(h.E)
 	myHash := h.Sum()
 
-	if myHash.String() != "c835e516bbf76602c897a9160c17bfe0e4a8bc9044f62b3e5e45a381232a2f86" {
+	if myHash.String() != "30abac67d0017556ae69416f54663edbe2fb14c7bcef028f2d228aef500e8f51" {
 		t.Fatal("wrong hash:", myHash.String())
 	}
 }
 
-// mm2src/coins/sia/transaction.rs test_satisfied_policy_threshold_atomic_swap_refund
-
+// https://github.com/KomodoPlatform/sia-rust/blob/93511895ae802b2e0e259a5224d78016d1b20008/src/tests/transaction.rs#L343C1-L370C10
 func TestSatisfiedPolicyThresholdAtomicSwapRefund(t *testing.T) {
 	h := types.NewHasher()
 
@@ -796,12 +840,12 @@ func TestSatisfiedPolicyThresholdAtomicSwapRefund(t *testing.T) {
 	sp.EncodeTo(h.E)
 	myHash := h.Sum()
 
-	if myHash.String() != "8975e8cf990d5a20d9ec3dae18ed3b3a0c92edf967a8d93fcdef6a1eb73bb348" {
+	if myHash.String() != "69b26bdb1114af01e4626d2a31184706e1dc83d83063c9019f9ee66381bd6923" {
 		t.Fatal("wrong hash:", myHash.String())
 	}
 }
 
-// mm2src/coins/sia/transaction.rs test_siacoin_input_encode_v2
+// https://github.com/KomodoPlatform/sia-rust/blob/93511895ae802b2e0e259a5224d78016d1b20008/src/tests/transaction.rs#L372C1-L406C10
 func TestSiacoinInputEncodeV2(t *testing.T) {
 	h := types.NewHasher()
 
@@ -836,12 +880,13 @@ func TestSiacoinInputEncodeV2(t *testing.T) {
 	vin.EncodeTo(h.E)
 	myHash := h.Sum()
 
-	if myHash.String() != "a8ab11b91ee19ce68f2d608bd4d19212841842f0c50151ae4ccb8e9db68cd6c4" {
+	if myHash.String() != "102a2924e7427ee3654bfeea8fc055fd82c2a403598484dbb704da9cdaada3ba" {
 		t.Fatal("wrong hash:", myHash.String())
 	}
 }
 
-// mm2src/coins/sia/spend_policy.rs test_attestation_encode
+// test_attestation_encode
+// https://github.com/KomodoPlatform/sia-rust/blob/dd4e466ae55fee0dafb81e1246371b4e150aaca1/src/tests/transaction.rs#L450C1-L469C10
 func TestAttestationEncode(t *testing.T) {
 	h := types.NewHasher()
 
@@ -863,7 +908,7 @@ func TestAttestationEncode(t *testing.T) {
 	}
 }
 
-// mm2src/coins/sia/transaction.rs test_file_contract_v2_encode
+// https://github.com/KomodoPlatform/sia-rust/blob/93511895ae802b2e0e259a5224d78016d1b20008/src/tests/transaction.rs#L428C1-L475C10
 func TestFileContractV2Encode(t *testing.T) {
 	h := types.NewHasher()
 
@@ -904,12 +949,12 @@ func TestFileContractV2Encode(t *testing.T) {
 	contract.EncodeTo(h.E)
 	myHash := h.Sum()
 
-	if myHash.String() != "6171a8d8ec31e06f80d46efbd1aecf2c5a7c344b5f2a2d4f660654b0cb84113c" {
+	if myHash.String() != "e851362bab643dc066b9d3c22c0fa0d67bc7b0cb520c689765e2292f4e7f435e" {
 		t.Fatal("wrong hash:", myHash.String())
 	}
 }
 
-// mm2src/coins/sia/transaction.rs test_file_contract_element_v2_encode
+// https://github.com/KomodoPlatform/sia-rust/blob/93511895ae802b2e0e259a5224d78016d1b20008/src/tests/transaction.rs#L477C1-L538C10
 func TestFileContractElementV2Encode(t *testing.T) {
 	h := types.NewHasher()
 
@@ -953,7 +998,7 @@ func TestFileContractElementV2Encode(t *testing.T) {
 	}
 
 	contractElement := types.V2FileContractElement{
-		ID:             types.FileContractID{1, 2, 3},
+		ID:             types.FileContractID{7, 7, 7},
 		StateElement:   stateElement,
 		V2FileContract: contract,
 	}
@@ -961,12 +1006,12 @@ func TestFileContractElementV2Encode(t *testing.T) {
 	contractElement.EncodeTo(h.E)
 	myHash := h.Sum()
 
-	if myHash.String() != "4cde411635118b2b7e1b019c659a2327ada53b303da0e46524e604d228fcd039" {
+	if myHash.String() != "3005594b14c1615aadaef2d8558713ebeabfa7d54f1dec671ba67ea8264816e6" {
 		t.Fatal("wrong hash:", myHash.String())
 	}
 }
 
-// mm2src/coins/sia/transaction.rs test_file_contract_element_v2_encode
+// https://github.com/KomodoPlatform/sia-rust/blob/93511895ae802b2e0e259a5224d78016d1b20008/src/tests/transaction.rs#L540C1-L606C10
 func TestFileContractRevisionV2Encode(t *testing.T) {
 	h := types.NewHasher()
 
@@ -1019,7 +1064,7 @@ func TestFileContractRevisionV2Encode(t *testing.T) {
 	contractRevision.EncodeTo(h.E)
 	myHash := h.Sum()
 
-	if myHash.String() != "22d5d1fd8c2762758f6b6ecf7058d73524ef209ac5a64f160b71ce91677db9a6" {
+	if myHash.String() != "4f23582ec40570345f72adab8cd6249c0167669b78aec9ac7209befefc281f4f" {
 		t.Fatal("wrong hash:", myHash.String())
 	}
 }
