@@ -670,7 +670,6 @@ func TestSatisfiedPolicyHashWithPreimageAndFrivulousSignature(t *testing.T) {
 		Preimages:  [][32]byte{{1, 2, 3, 4}}}
 
 	sp.EncodeTo(h.E)
-	println("buf: ", hex.EncodeToString(h.E.Buf()[:h.E.N()]))
 	myHash := h.Sum()
 
 	if myHash.String() != "cf1a51cb2e76546d96e8034ab050fbe95b6423ad450b2de8a4e76ad8f72500ed" {
