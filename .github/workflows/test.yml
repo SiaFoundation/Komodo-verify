@@ -21,7 +21,9 @@ jobs:
         with:
           go-version: ${{ matrix.go-version }}
       - name: Update core dependency
-        run: go get go.sia.tech/core@master
+        run: |
+          go get go.sia.tech/core@master
+          go mod tidy
       - uses: SiaFoundation/workflows/.github/actions/go-test@master
         with:
           go-test-args: ${{ inputs.go-test-args }}
