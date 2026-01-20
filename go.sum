@@ -1,5 +1,5 @@
-go.sia.tech/core v0.18.0 h1:b4xOGdbMmbrqji5y+mHiP0TCzJADQY1okPPapiKuSag=
-go.sia.tech/core v0.18.0/go.mod h1:evyyK5QluEbh0QmVAgtttrbUafj3365fZ4MLePvGTM4=
+go.sia.tech/core v0.19.0 h1:mj/lsixiI25hNTq1FzLHs94BCewTABulkqq2pHSHmdo=
+go.sia.tech/core v0.19.0/go.mod h1:Gge/hpiE9m1ugPLz8RR1ZMoYZTPWLEdRWviHr/4rVeA=
 golang.org/x/crypto v0.45.0 h1:jMBrvKuj23MTlT0bQEOBcAE0mjg8mK9RXFhRH6nyF3Q=
 golang.org/x/crypto v0.45.0/go.mod h1:XTGrrkGJve7CYK7J8PEww4aY7gM3qMCElcJQ8n8JdX4=
 golang.org/x/sys v0.38.0 h1:3yZWxaJjBmCWXqhN1qh02AkOnCQ1poK6oF+a7xWL6Gc=
