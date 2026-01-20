@@ -2,7 +2,7 @@ module go.sia.tech/komodo-verify
 
 go 1.24.2
 
-require go.sia.tech/core v0.18.0
+require go.sia.tech/core v0.19.0
 
 require (
 	golang.org/x/crypto v0.45.0 // indirect
